@@ -19,3 +19,17 @@ sleep int)
 RETURNS INT
 AS 'MODULE_PATHNAME', 'pg_LockBuffer'
 LANGUAGE C STRICT;
+
+CREATE FUNCTION pg_lockforextension(
+regclass)
+RETURNS INT
+AS 'MODULE_PATHNAME', 'pg_lockforextension'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION multi_exec(
+nworkers int,
+relid regclass
+)
+RETURNS INT
+AS 'MODULE_PATHNAME', 'multi_exec'
+LANGUAGE C STRICT;
