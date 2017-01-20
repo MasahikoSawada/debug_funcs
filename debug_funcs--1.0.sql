@@ -33,3 +33,13 @@ relid regclass
 RETURNS INT
 AS 'MODULE_PATHNAME', 'multi_exec'
 LANGUAGE C STRICT;
+
+CREATE FUNCTION replock()
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'replock'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION show_define_variables()
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'show_define_variables'
+LANGUAGE C STRICT;

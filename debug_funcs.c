@@ -19,6 +19,7 @@
 #include "access/parallel.h"
 #include "access/relscan.h"
 #include "access/xact.h"
+#include "access/visibilitymap.h"
 #include "catalog/pg_type.h"
 #include "catalog/storage_xlog.h"
 #include "funcapi.h"
@@ -39,7 +40,9 @@ PG_MODULE_MAGIC;
 PG_FUNCTION_INFO_V1(pg_LockBufferForCleanup);
 PG_FUNCTION_INFO_V1(pg_LockBuffer);
 PG_FUNCTION_INFO_V1(pg_lockforextension);
+PG_FUNCTION_INFO_V1(replock);
 PG_FUNCTION_INFO_V1(multi_exec);
+PG_FUNCTION_INFO_V1(show_define_variables);
 
 static void multi_exec_worker(dsm_segment *seg, shm_toc *toc);
 
@@ -124,6 +127,18 @@ pg_lockforextension(PG_FUNCTION_ARGS)
 	elog(NOTICE, "after slept");
 
 	relation_close(rel, RowExclusiveLock);
+
+	PG_RETURN_NULL();
+}
+
+Datum
+replock(PG_FUNCTION_ARGS)
+{
+	LWLockAcquire(SyncRepLock, LW_EXCLUSIVE);
+	elog(NOTICE, "<%d> Acquired", MyProcPid);
+	pg_usleep(30 * 1000L * 1000L);
+	LWLockRelease(SyncRepLock);
+	elog(NOTICE, "<%d> Acquired", MyProcPid);
 
 	PG_RETURN_NULL();
 }
@@ -218,4 +233,16 @@ multi_exec_worker(dsm_segment *seg, shm_toc *toc)
 	}
 
 	relation_close(rel, AccessExclusiveLock);
+}
+
+Datum
+show_define_variables(PG_FUNCTION_ARGS)
+{
+	int mapsize =  BLCKSZ - MAXALIGN(SizeOfPageHeaderData);
+	int heapblocks_per_byte =  BITS_PER_BYTE / BITS_PER_HEAPBLOCK;
+	elog(NOTICE, "visibilitymap.c: MAPSIZE %u", mapsize);
+	elog(NOTICE, "visibilitymap.c: HEAPBLOCKS_PER_BYTE %u", heapblocks_per_byte);
+	elog(NOTICE, "visibilitymap.c: HEAPBLOCKS_PER_PAGE %u", mapsize * heapblocks_per_byte);
+
+	PG_RETURN_NULL();
 }
