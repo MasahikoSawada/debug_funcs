@@ -26,13 +26,6 @@ RETURNS INT
 AS 'MODULE_PATHNAME', 'pg_lockforextension'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION multi_exec(
-nworkers int,
-relid regclass
-)
-RETURNS INT
-AS 'MODULE_PATHNAME', 'multi_exec'
-LANGUAGE C STRICT;
 
 CREATE FUNCTION replock()
 RETURNS TEXT
@@ -42,4 +35,34 @@ LANGUAGE C STRICT;
 CREATE FUNCTION show_define_variables()
 RETURNS TEXT
 AS 'MODULE_PATHNAME', 'show_define_variables'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION hoge()
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'hoge'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION pg_get_lock()
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'pg_get_lock'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION rel_lock(
+regclass,
+bool)
+RETURNS INT
+AS 'MODULE_PATHNAME', 'rel_lock'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION rel_unlock(
+regclass)
+RETURNS INT
+AS 'MODULE_PATHNAME', 'rel_unlock'
+LANGUAGE C STRICT;
+
+CREATE FUNCTION rel_lock_unlock(
+regclass,
+int)
+RETURNS INT
+AS 'MODULE_PATHNAME', 'rel_lock_unlock'
 LANGUAGE C STRICT;
