@@ -37,16 +37,6 @@ RETURNS TEXT
 AS 'MODULE_PATHNAME', 'show_define_variables'
 LANGUAGE C STRICT;
 
-CREATE FUNCTION hoge()
-RETURNS TEXT
-AS 'MODULE_PATHNAME', 'hoge'
-LANGUAGE C STRICT;
-
-CREATE FUNCTION pg_get_lock()
-RETURNS TEXT
-AS 'MODULE_PATHNAME', 'pg_get_lock'
-LANGUAGE C STRICT;
-
 CREATE FUNCTION rel_lock(
 regclass,
 bool)
@@ -66,3 +56,10 @@ int)
 RETURNS INT
 AS 'MODULE_PATHNAME', 'rel_lock_unlock'
 LANGUAGE C STRICT;
+
+CREATE FUNCTION extlock_bench(
+regclass, int)
+RETURNS TEXT
+AS 'MODULE_PATHNAME', 'extlock_bench'
+LANGUAGE C STRICT;
+

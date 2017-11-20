@@ -43,38 +43,11 @@ PG_FUNCTION_INFO_V1(pg_LockBuffer);
 PG_FUNCTION_INFO_V1(pg_lockforextension);
 PG_FUNCTION_INFO_V1(replock);
 PG_FUNCTION_INFO_V1(show_define_variables);
-PG_FUNCTION_INFO_V1(pg_get_lock);
 PG_FUNCTION_INFO_V1(rel_lock);
 PG_FUNCTION_INFO_V1(rel_unlock);
 PG_FUNCTION_INFO_V1(rel_lock_unlock);
+PG_FUNCTION_INFO_V1(extlock_bench);
 PG_FUNCTION_INFO_V1(hoge);
-
-Datum
-hoge(PG_FUNCTION_ARGS)
-{
-	Datum array[4];
-	int nelems = 0;
-
-	Datum res;
-	ArrayType *a;
-	char *a_string;
-
-	array[0] = CStringGetTextDatum("hoge");
-	array[1] = CStringGetTextDatum("bar");
-	array[2] = CStringGetTextDatum("rar");
-	array[3] = CStringGetTextDatum("yah");
-	nelems = 4;
-	
-	a = construct_array(array, nelems, TEXTOID, -1, false, 'i');
-
-	res = DirectFunctionCall1(array_out, PointerGetDatum(a));
-
-	a_string = DatumGetCString(res);
-	
-	elog(WARNING, "a : %s", a_string);
-
-	PG_RETURN_NULL();
-}
 
 Datum
 rel_lock(PG_FUNCTION_ARGS)
@@ -133,11 +106,41 @@ rel_lock_unlock(PG_FUNCTION_ARGS)
 	PG_RETURN_NULL();
 }
 
-
 Datum
-pg_get_lock(PG_FUNCTION_ARGS)
+extlock_bench(PG_FUNCTION_ARGS)
 {
-	LockRelationOid(99999, AccessShareLock);
+	Oid relid = PG_GETARG_OID(0);
+	int nLoops = PG_GETARG_INT32(1);
+	Relation rel;
+	TimestampTz start, end;
+	int i;
+	long secs;
+	int microsecs;
+
+	rel = relation_open(relid, AccessShareLock);
+
+	/* Start time */
+	start = GetCurrentTimestamp();
+
+	/* Bench */
+	for (i = 0; i < nLoops; i++)
+	{
+#ifdef EXTENSION_H
+		LockRelationForExtension(rel, RELEXT_EXCLUSIVE);
+		UnlockRelationForExtension(rel, RELEXT_EXCLUSIVE);
+#else
+		LockRelationForExtension(rel, ExclusiveLock);
+		UnlockRelationForExtension(rel, ExclusiveLock);
+#endif
+	}
+
+	end = GetCurrentTimestamp();
+
+	relation_close(rel, AccessShareLock);
+
+	TimestampDifference(start, end, &secs, &microsecs);
+
+	elog(NOTICE, "duration = %ld", secs);
 
 	PG_RETURN_NULL();
 }
