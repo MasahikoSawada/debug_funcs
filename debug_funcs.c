@@ -116,6 +116,7 @@ extlock_bench(PG_FUNCTION_ARGS)
 	int i;
 	long secs;
 	int microsecs;
+	float duration;
 
 	rel = relation_open(relid, AccessShareLock);
 
@@ -125,7 +126,7 @@ extlock_bench(PG_FUNCTION_ARGS)
 	/* Bench */
 	for (i = 0; i < nLoops; i++)
 	{
-#ifdef EXTENSION_H
+#ifdef EXTENSION_LOCK_H
 		LockRelationForExtension(rel, RELEXT_EXCLUSIVE);
 		UnlockRelationForExtension(rel, RELEXT_EXCLUSIVE);
 #else
@@ -139,10 +140,9 @@ extlock_bench(PG_FUNCTION_ARGS)
 	relation_close(rel, AccessShareLock);
 
 	TimestampDifference(start, end, &secs, &microsecs);
+	duration = (float) microsecs / 1000000 + secs;
 
-	elog(NOTICE, "duration = %ld", secs);
-
-	PG_RETURN_NULL();
+	PG_RETURN_FLOAT4(nLoops / duration);
 }
 
 /*
